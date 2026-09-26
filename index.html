@@ -1,0 +1,812 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tool Modo di pacing">
+<meta name="theme-color" content="#FAF9F7">
+<script data-iphone="sentinella">
+(function(){
+var h=document.documentElement, msg="";
+function ha(c){ return (" "+h.className+" ").indexOf(" "+c+" ")>=0; }
+// L'errore puo' arrivare prima che l'avviso esista — uno script in <head> che
+// non si lascia leggere —: il messaggio si tiene da parte e si scrive quando
+// la pagina c'e'.
+function scrivi(){
+  var e=document.getElementById("nmerr");
+  if(e&&msg) e.textContent="Errore del motore: "+msg;
+}
+function ko(m){
+  if(m&&!msg) msg=m;
+  if(!ha("motore-ko")) h.className+=" motore-ko";
+  scrivi();
+}
+h.className+=" js";
+window.onerror=function(m,src,riga,col){
+  m=String(m);
+  if(/^Script error\.?$/.test(m)) m="il browser non ne mostra il dettaglio (\u00abScript error.\u00bb)";
+  ko(m+(riga?" (riga "+riga+(col?", colonna "+col:"")+")":""));
+};
+document.addEventListener("DOMContentLoaded",function(){
+  if(!ha("motore-ok")) ko(msg||"il motore non ha completato l'avvio"); else scrivi();
+});
+})();
+</script>
+<title>Modo di stimolazione — SND e BAV, ESC 2021</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#FAF9F7; --surface:#FFFFFF; --surface-alt:#F3F2EF;
+    --border:rgba(11,11,11,0.10); --border-strong:rgba(11,11,11,0.18);
+    --text-primary:#0B0B0B; --text-secondary:#52514E; --text-muted:#76746F;
+    --accent-blue:#2A78D6;   --accent-blue-bg:#E6F1FB;   --accent-blue-border:#B5D4F4;
+    --accent-amber:#BA7517;  --accent-amber-bg:#FAEEDA;  --accent-amber-border:#FAC775;
+    --accent-red:#A32D2D;    --accent-red-bg:#FCEBEB;    --accent-red-border:#F7C1C1;
+    --accent-green:#3B6D11;  --accent-green-bg:#EAF3DE;  --accent-green-border:#C0DD97;
+    --accent-purple:#534AB7; --accent-purple-bg:#EEEDFE; --accent-purple-border:#CECBF6;
+    --cor-1:#3B8E5A; --cor-2a:#E0A82E; --cor-2b:#DE7E3C; --cor-3:#B33A3A;
+    --k0:#2E7D4F; --k0-bg:#E2F3E8; --k0-bd:#A6D9B8;
+    --k1:#2A78D6; --k1-bg:#E3EFFB; --k1-bd:#A9CBF1;
+    --k2:#8A6A00; --k2-bg:#FBF3C8; --k2-bd:#EBD56C;
+    --k3:#B45309; --k3-bg:#FDEBD8; --k3-bd:#F4BD85;
+    --k4:#A32D2D; --k4-bg:#FCE3E3; --k4-bd:#F0A9A9;
+    --grid:rgba(42,120,214,.08);
+    --font:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --display:'IBM Plex Sans Condensed','Arial Narrow',-apple-system,'Segoe UI',sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,Consolas,'Courier New',monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#111418; --surface:#181C22; --surface-alt:#20252D;
+      --border:rgba(255,255,255,.10); --border-strong:rgba(255,255,255,.19);
+      --text-primary:#E7EAEE; --text-secondary:#B8BEC7; --text-muted:#949BA5;
+      --accent-blue:#72AAEE;   --accent-blue-bg:#18283A;   --accent-blue-border:#2E4B6C;
+      --accent-amber:#E3A94F;  --accent-amber-bg:#30250F;  --accent-amber-border:#5D4719;
+      --accent-red:#EF8E8E;    --accent-red-bg:#361B1B;    --accent-red-border:#6B3232;
+      --accent-green:#95C873;  --accent-green-bg:#1C2A13;  --accent-green-border:#3C5626;
+      --accent-purple:#ADA6F2; --accent-purple-bg:#23213B; --accent-purple-border:#454077;
+      --k0:#8FD3A8; --k0-bg:#132B1D; --k0-bd:#2D5A3E;
+      --k1:#8EC0F5; --k1-bg:#16283C; --k1-bd:#2F5378;
+      --k2:#EDD36A; --k2-bg:#2C260C; --k2-bd:#5E5120;
+      --k3:#F3B27A; --k3-bg:#33210F; --k3-bd:#6B4524;
+      --k4:#F29A9A; --k4-bg:#361B1B; --k4-bd:#6B3232;
+      --grid:rgba(114,170,238,.07);
+      color-scheme:dark;
+    }
+  }
+  body { font-family:var(--font); background:var(--bg); color:var(--text-primary); font-size:14.5px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  .page { max-width:960px; margin:0 auto; padding:0 16px 4rem; }
+  strong, b { font-weight:600; }
+  .muted { color:var(--text-muted); }
+  .hero { margin:0 -16px 0; padding:2.2rem 16px 1.3rem; border-bottom:1px solid var(--border);
+          background-color:var(--bg);
+          background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+          background-size:22px 22px; }
+  .kicker { font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--accent-blue); margin-bottom:8px; }
+  .headline { font-family:var(--display); font-size:30px; font-weight:700; line-height:1.12; margin-bottom:10px; }
+  .lede { font-size:14.5px; color:var(--text-secondary); max-width:760px; margin-bottom:12px; }
+  .lede strong { color:var(--text-primary); }
+  .meta-row { display:flex; flex-wrap:wrap; gap:6px 8px; font-size:12px; }
+  .meta-chip { background:var(--surface); border:1px solid var(--border-strong); border-radius:99px; padding:2px 10px; color:var(--text-secondary); overflow-wrap:anywhere; }
+  .meta-chip strong { color:var(--text-primary); }
+  .bar { position:-webkit-sticky;position:sticky; top:0; z-index:30; background:var(--bg); border-bottom:1px solid var(--border-strong);
+         margin:0 -16px 1.2rem; padding:8px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
+  .bar .lbl { font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); }
+  .bar .sp { flex:1 1 auto; }
+  .btn { font:600 12.5px var(--font); padding:6px 13px; border-radius:99px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text-secondary); cursor:pointer; }
+  .btn:hover { border-color:var(--accent-blue); color:var(--accent-blue); }
+  .stage { display:flex; align-items:baseline; gap:10px; margin:2rem 0 .7rem; padding-bottom:6px; border-bottom:2px solid var(--border-strong); }
+  .stage-n { font-family:var(--mono); font-size:12px; font-weight:600; color:#FFFFFF; background:var(--accent-blue); border-radius:6px; padding:1px 7px; }
+  .stage-t { font-family:var(--display); font-size:20px; font-weight:700; line-height:1.2; }
+  .stage-w { margin-left:auto; font-size:11.5px; color:var(--text-muted); text-align:right; }
+  .card { background:var(--surface); border:1px solid var(--border-strong); border-radius:12px; padding:14px 16px; margin-bottom:12px; }
+  .card h3 { font-size:13px; font-weight:600; letter-spacing:.02em; margin-bottom:8px; color:var(--text-secondary); }
+  .row { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; margin-bottom:10px; }
+  .row:last-child { margin-bottom:0; }
+  .fl { font-size:12.5px; font-weight:600; color:var(--text-secondary); min-width:150px; }
+  .fl small { display:block; font-weight:400; color:var(--text-muted); font-size:11.5px; }
+  input[type=number] { font:500 15px var(--font); color:var(--text-primary); background:var(--surface); border:1px solid var(--border-strong); border-radius:8px; padding:6px 9px; width:92px; text-align:center; }
+  .seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--border-strong); border-radius:10px; overflow:hidden; max-width:100%; }
+  .seg label { position:relative; cursor:pointer; }
+  .seg input { position:absolute; opacity:0; width:1px; height:1px; }
+  .seg span { display:block; padding:6px 12px; font-size:13.5px; font-weight:500; color:var(--text-secondary); border-right:1px solid var(--border); }
+  .seg label:last-child span { border-right:none; }
+  .seg input:checked + span { background:var(--text-primary); color:var(--bg); }
+  .seg input:focus-visible + span { outline:2px solid var(--accent-blue); outline-offset:-2px; }
+  .chk { display:flex; align-items:flex-start; gap:9px; padding:6px 0; font-size:14px; line-height:1.45; border-bottom:1px dashed var(--border); cursor:pointer; }
+  .chk:last-child { border-bottom:none; }
+  .chk input { margin-top:3px; width:17px; height:17px; flex:0 0 auto; accent-color:var(--accent-blue); }
+  .chk small { display:block; color:var(--text-muted); font-size:12px; }
+  .due { display:grid; grid-template-columns:1fr 1fr; gap:4px 14px; }
+  .hide { display:none !important; }
+  .esito { display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; margin-bottom:4px; }
+  .cat { display:inline-block; font-size:12.5px; font-weight:600; border-radius:99px; padding:2px 10px; border:1px solid; }
+  .k0 { color:var(--k0); background:var(--k0-bg); border-color:var(--k0-bd); }
+  .k1 { color:var(--k1); background:var(--k1-bg); border-color:var(--k1-bd); }
+  .k2 { color:var(--k2); background:var(--k2-bg); border-color:var(--k2-bd); }
+  .k3 { color:var(--k3); background:var(--k3-bg); border-color:var(--k3-bd); }
+  .k4 { color:var(--k4); background:var(--k4-bg); border-color:var(--k4-bd); }
+  .kx { color:var(--text-muted); background:var(--surface-alt); border-color:var(--border-strong); }
+  .big { font-family:var(--display); font-size:24px; font-weight:700; line-height:1.15; }
+  .via { font-family:var(--mono); font-size:12px; color:var(--text-secondary); margin:2px 0 8px; overflow-wrap:anywhere; }
+  .cor { display:inline-block; font-family:var(--mono); font-size:11px; font-weight:600; color:#FFFFFF; border-radius:4px; padding:0 5px; margin:0 1px; white-space:nowrap; vertical-align:1px; }
+  .c1 { background:var(--cor-1); } .c2a { background:var(--cor-2a); color:#1D1602; } .c2b { background:var(--cor-2b); } .c3 { background:var(--cor-3); }
+  .cnc { background:var(--surface-alt); color:var(--text-secondary); border:1px solid var(--border-strong); }
+  .pg { font-family:var(--mono); font-size:11px; color:var(--text-muted); }
+  .nota { border-left:3px solid var(--accent-amber); background:var(--accent-amber-bg); border-radius:0 8px 8px 0; padding:7px 11px; margin-top:8px; font-size:13.5px; }
+  .nota.info { border-left-color:var(--accent-blue); background:var(--accent-blue-bg); }
+  .nota.stop { border-left-color:var(--accent-red); background:var(--accent-red-bg); }
+  .nota.ok { border-left-color:var(--accent-green); background:var(--accent-green-bg); }
+  .nota.confine { border-left-color:var(--accent-purple); background:var(--accent-purple-bg); }
+  .nota strong { color:var(--text-primary); }
+  .riga { display:flex; gap:10px; padding:8px 0; border-bottom:1px dashed var(--border); }
+  .riga:last-child { border-bottom:none; }
+  .riga .ico { flex:0 0 22px; font-weight:700; text-align:center; font-family:var(--mono); font-size:13px; padding-top:1px; }
+  .riga .tx { flex:1 1 auto; font-size:14px; min-width:0; overflow-wrap:anywhere; }
+  .riga.si .ico { color:var(--k0); }
+  .riga.no .ico { color:var(--text-muted); }
+  .riga.no .tx { color:var(--text-muted); }
+  .riga.nd .ico { color:var(--accent-amber); }
+  .riga.esc .ico { color:var(--accent-red); }
+  .lista li { margin:4px 0 4px 18px; font-size:13.5px; }
+  .foot { margin-top:2.4rem; padding-top:1rem; border-top:1px solid var(--border-strong); font-size:12px; color:var(--text-muted); line-height:1.7; }
+  .foot strong { color:var(--text-secondary); }
+  @media (max-width:640px) {
+    .due { grid-template-columns:1fr; }
+    .headline { font-size:25px; }
+    .stage-w { display:none; }
+    .fl { min-width:0; width:100%; }
+    .big { font-size:21px; }
+  }
+  @media print { .bar { position:static; } }
+</style>
+<style data-iphone="stile">
+/* L'avviso e' visibile per costruzione: lo nasconde solo la classe che la
+   sentinella mette quando JavaScript esiste, e lo rimostra quando il motore
+   muore. Nell'anteprima dell'iPhone nessuna delle due arriva. */
+#nomotore{background:#FCEBEB;border:1.5px solid #A32D2D;border-radius:10px;
+ padding:12px 15px;margin:0 0 1.1rem;font-size:13.5px;line-height:1.6;color:#0B0B0B;
+ font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif}
+#nomotore strong{display:block;color:#A32D2D;font-size:15px;margin-bottom:4px}
+#nomotore p{margin:6px 0 0}
+#nomotore a{color:#A32D2D}
+#nomotore .nmurl{font-family:'SFMono-Regular',Consolas,Menlo,monospace;font-size:.92em;word-break:break-all}
+#nomotore .nmerr{display:block;font-family:'SFMono-Regular',Consolas,Menlo,monospace;
+ font-size:11.5px;color:#A32D2D;margin-top:6px;word-break:break-word}
+#nomotore .nmerr:empty{display:none}
+html.js #nomotore{display:none}
+html.js.motore-ko #nomotore{display:block}
+
+#nmprivacy{background:#E2F4F5;border:1px solid #A7DBDE;border-radius:8px;padding:9px 13px;
+ margin:0 0 1rem;font-size:12.5px;line-height:1.55;color:#0B0B0B;
+ font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif}
+@media print{#nmprivacy{display:none}}
+</style>
+</head>
+<body>
+<div class="nomotore" id="nomotore" role="alert">
+ <strong>Motore di calcolo non attivo</strong>
+ <p>I calcoli, i filtri e i comandi di questa pagina <b>non funzionano</b>: dove leggi «—» non c'è un
+ valore. Il testo resta leggibile, i numeri che dipendono dai tuoi dati no. Non usare questa pagina
+ per decidere una dose.</p>
+ <p>Su iPhone e iPad succede sempre con un file salvato sul telefono: si apre nell'<b>anteprima</b> —
+ dall'app File, da Mail, da WhatsApp —, che mostra la pagina ma non esegue il motore, e Apple non
+ permette di aprirlo in Safari. Sull'iPhone il tool funziona aperto da questo indirizzo, in Safari: <a class="nmurl" href="https://francescofugetto-ai.github.io/tool-modo-pacing-web/">https://francescofugetto-ai.github.io/tool-modo-pacing-web/</a> — poi Condividi, «Aggiungi alla schermata Home». Dopo la prima apertura funziona anche senza rete. Su computer e Android basta aprire il file.</p>
+ <span class="nmerr" id="nmerr"></span>
+</div>
+<div class="nmprivacy" id="nmprivacy">
+ <b>Quello che scrivi resta su questo dispositivo.</b> La pagina non invia niente in rete e non
+ salva niente: nessun dato esce da qui. Per la stessa ragione, <b>chiudendola il contenuto si
+ perde</b> — copia il referto dove ti serve prima di chiudere.
+</div>
+<div class="page">
+<header class="hero">
+  <div class="kicker">Strumento · Pacing e CIED · ESC 2021</div>
+  <h1 class="headline">Modo di stimolazione nella SND e nel BAV</h1>
+  <p class="lede"><strong>Come si usa.</strong> I passi 1 e 2 portano alla <strong>colonna</strong> della figura: il disturbo, il suo andamento, poi il dettaglio che la separa (incompetenza cronotropa, SND associata, FA permanente). Il passo 3 dice se vale uno dei due <strong>ripieghi</strong>. Il passo 4 serve per il segnale verso <strong>CRT o stimolazione hisiana</strong> e per il <strong>leadless</strong>. Ne escono il modo, le raccomandazioni che lo accompagnano con classe e pagina, e che cosa lo cambierebbe. Lo strumento dà per acquisita l'indicazione al pacing. <strong>Azzera</strong>, in alto, ricomincia.</p>
+  <div class="meta-row">
+    <span class="meta-chip"><strong>Fonte</strong> 2021 ESC Guidelines on cardiac pacing and cardiac resynchronization therapy, e il supplementare</span>
+    <span class="meta-chip"><strong>Calcolo</strong> Fig. 5 p. 25 · raccomandazioni pp. 26, 27, 38, 43, 44 · testo pp. 24, 27–29, 42–44 · Suppl. Tab. S2 e S6</span>
+  </div>
+</header>
+
+<div class="bar" id="bar" aria-live="polite">
+  <span class="lbl">Modo</span> <span id="barModo" class="cat kx">—</span>
+  <span class="lbl">CRT / HBP</span> <span id="barFisio" class="cat kx">—</span>
+  <span class="lbl">Leadless</span> <span id="barLead" class="cat kx">—</span>
+  <span class="sp"></span>
+  <button class="btn" id="azzera" type="button">Azzera</button>
+</div>
+
+<div class="stage"><span class="stage-n">1</span><span class="stage-t">Disturbo e andamento</span><span class="stage-w">Fig. 5, p. 25</span></div>
+<div class="card">
+  <div class="row">
+    <span class="fl">Disturbo</span>
+    <span class="seg">
+      <label><input type="radio" name="dist" value="snd"><span>disfunzione del nodo del seno (SND)</span></label>
+      <label><input type="radio" name="dist" value="bav"><span>blocco AV (BAV)</span></label>
+    </span>
+  </div>
+  <div class="row">
+    <span class="fl">Andamento</span>
+    <span class="seg">
+      <label><input type="radio" name="and" value="pers"><span>persistente</span></label>
+      <label><input type="radio" name="and" value="parox"><span>parossistico, intermittente</span></label>
+    </span>
+  </div>
+</div>
+
+<div class="stage"><span class="stage-n">2</span><span class="stage-t">Il dettaglio che separa le colonne</span><span class="stage-w">Fig. 5 e nota a, p. 25 · p. 26</span></div>
+<div class="card">
+  <div class="row" id="rigaRitmo">
+    <span class="fl">Ritmo atriale<small>la figura porta la FA nel ramo del BAV</small></span>
+    <span class="seg">
+      <label><input type="radio" name="ritmo" value="rs"><span>ritmo sinusale</span></label>
+      <label><input type="radio" name="ritmo" value="fa"><span>FA permanente</span></label>
+    </span>
+  </div>
+  <div class="row" id="rigaSndAss">
+    <span class="fl">SND associata al BAV<small>nel BAV persistente separa due colonne</small></span>
+    <span class="seg">
+      <label><input type="radio" name="sndAss" value="si"><span>sì</span></label>
+      <label><input type="radio" name="sndAss" value="no"><span>no</span></label>
+    </span>
+  </div>
+  <div class="row" id="rigaCi">
+    <span class="fl">Incompetenza cronotropa<small>decide la colonna nella SND persistente e scioglie la (R)</small></span>
+    <span class="seg">
+      <label><input type="radio" name="ci" value="si"><span>sì</span></label>
+      <label><input type="radio" name="ci" value="no"><span>no</span></label>
+    </span>
+  </div>
+  <label class="chk" id="rigaSforzo"><input type="checkbox" id="sforzo"><span>Sintomi chiari durante lo sforzo<small>la riga IIa B del DDD con risposta in frequenza li chiede</small></span></label>
+  <div class="row" id="rigaGrado">
+    <span class="fl">Grado del BAV<small>serve per la riga della CRT (p. 38)</small></span>
+    <span class="seg">
+      <label><input type="radio" name="grado" value="alto"><span>alto grado o completo</span></label>
+      <label><input type="radio" name="grado" value="altro"><span>altro grado</span></label>
+    </span>
+  </div>
+</div>
+
+<div class="stage"><span class="stage-n">3</span><span class="stage-t">I due ripieghi della figura</span><span class="stage-w">Fig. 5 nota b, p. 25 · pp. 24, 27</span></div>
+<div class="card">
+  <h3>Motivi per evitare due elettrocateteri</h3>
+  <div class="due">
+    <label class="chk"><input type="checkbox" id="giovane"><span>Giovane età<small>nota b della figura</small></span></label>
+    <label class="chk"><input type="checkbox" id="altro2"><span>Altro motivo<small>la nota b dice «comprendono»: l'elenco è aperto</small></span></label>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <span class="fl">Accesso venoso degli arti superiori<small>limitato: nota b · assente: riga del leadless, p. 44</small></span>
+    <span class="seg">
+      <label><input type="radio" name="venoso" value="ok"><span>disponibile</span></label>
+      <label><input type="radio" name="venoso" value="limitato"><span>limitato</span></label>
+      <label><input type="radio" name="venoso" value="assente"><span>assente</span></label>
+    </span>
+  </div>
+  <h3 style="margin-top:12px">Comorbidità</h3>
+  <label class="chk"><input type="checkbox" id="comorb"><span>Comorbidità significativa o fragilità<small>nel testo: fragilità significativa, età molto avanzata, comorbidità che limitano l'aspettativa di vita, mobilità molto ridotta (p. 27)</small></span></label>
+</div>
+
+<div class="stage"><span class="stage-n">4</span><span class="stage-t">Per CRT, HBP e leadless</span><span class="stage-w">pp. 24, 38, 43, 44</span></div>
+<div class="card">
+  <div class="row">
+    <span class="fl">FEVS<small>%</small></span>
+    <input type="number" id="fevs" min="5" max="80" step="1" inputmode="numeric" placeholder="es. 55">
+  </div>
+  <div class="row">
+    <span class="fl">Pacing ventricolare atteso<small>quota dei battiti stimolati</small></span>
+    <span class="seg">
+      <label><input type="radio" name="quota" value="bassa"><span>fino al 20%</span></label>
+      <label><input type="radio" name="quota" value="alta"><span>oltre il 20%</span></label>
+    </span>
+  </div>
+  <label class="chk"><input type="checkbox" id="infez"><span>Rischio d'infezione della tasca particolarmente alto<small>per esempio pregressa infezione di un dispositivo, emodialisi (p. 44)</small></span></label>
+</div>
+
+<div class="stage"><span class="stage-n">→</span><span class="stage-t">Che cosa fare</span><span class="stage-w">ESC 2021</span></div>
+<div class="card" id="outModo"></div>
+<div class="card" id="outRacc"></div>
+<div class="card" id="outFisio"></div>
+<div class="card" id="outLead"></div>
+
+<div class="card"><h3>Incoerenze della fonte toccate da questo caso</h3><div id="outInc"></div></div>
+<div class="card"><h3>Limiti per questo paziente</h3><ul class="lista" id="limiti"></ul></div>
+
+<div class="foot">
+  <strong>Fonte.</strong> Glikson M, Nielsen JC, et al. 2021 ESC Guidelines on cardiac pacing and cardiac resynchronization therapy. <em>Eur Heart J</em> 2021 (doi 10.1093/eurheartj/ehab364), e il suo supplementare — scelta del modo nella SND e nel BAV (§ 5.1.2 e § 5.2.2, pp. 24–28; Fig. 5, p. 25; raccomandazioni pp. 26–27), bradicardia intermittente e VDD (§ 5.3.2, p. 29), CRT nel BAV con FEVS ridotta (§ 6.5, p. 38), stimolazione hisiana (§ 7.2, pp. 42–43), leadless (§ 7.4, pp. 43–44); Suppl. Tab. S2 (Suppl. p. 6) e S6 (Suppl. p. 10). Le pagine sono quelle stampate del PDF. Ogni esito porta la sua.<br><br>
+  Strumento personale di studio e consultazione: <strong>non sostituisce il giudizio clinico</strong>. Non sceglie fra CRT e stimolazione del sistema di conduzione: lo fa lo strumento CSP sul consensus EHRA/ESC 2025. Dove la ESC 2026 sullo scompenso dice altro, lo segnala senza calcolarlo. Non salva i dati e non li invia in rete.
+</div>
+
+</div>
+<script>
+(function () {
+  "use strict";
+
+  /* ═══ DATI ═══════════════════════════════════════════════════════════════
+     2021 ESC Guidelines on cardiac pacing and CRT (pagine stampate del PDF).
+
+     Fig. 5, p. 25 — modo ottimale nella SND e nel BAV. Tre righe per colonna:
+     default · «qualunque motivo per evitare 2 elettrocateteri» (nota b: giovane
+     eta', accesso venoso limitato) · «comorbidita' significativa». null = cella
+     vuota nella figura. Letta sull'immagine, colonna per colonna:
+       SND · persistente · incompetenza cronotropa SI'  DDDR + AVM | AAIR monocamerale | VVIR
+       SND · persistente · incompetenza cronotropa NO   DDD + AVM  | AAI monocamerale  | VVI
+       SND · parossistica                 DDD(R)a + AVM | monocamerale AAI(R)a o VVI(R)a | VVI + isteresi
+       BAV · persistente · SND            DDD(R)a | VVI(R)a | —
+       BAV · persistente · no SND         DDD     | VDD     | VVI
+       BAV · persistente · FA             VVIR    | —       | —
+       BAV · parossistico  RS: DDD + AVM, FA: VVI + isteresi | VDD | VVI + isteresi
+     nota a: la (R) vuol dire che la programmazione rate-responsive e' preferita
+       solo con incompetenza cronotropa.
+     legenda: AVM = ritardo AV programmato senza superare i 230 ms, o algoritmi
+       che evitano/riducono il pacing ventricolare non necessario.
+     nota: nei candidati a VVI/VDD si puo' considerare il leadless (sez. 7).
+
+     Raccomandazioni (verificate sulla griglia raccomandazioni.json e sul testo):
+       p. 26  SND con DDD: minimizzare il pacing ventricolare non necessario .... I A
+       p. 26  incompetenza cronotropa e sintomi chiari da sforzo: DDD-R ........ IIa B
+       p. 27  FA permanente con indicazione: pacing ventricolare con rate response I C
+       p. 27  BAV: DDD preferito al ventricolare monocamerale ................. IIa A
+       p. 38  HFrEF (<40%) + indicazione al pacing ventricolare + BAV di alto
+              grado: CRT anziche' pacing VD, ogni NYHA, anche in FA ........... I A
+       p. 43  BAV, FEVS >40%, pacing ventricolare atteso >20%: HBP in
+              alternativa al pacing VD ....................................... IIb C
+       p. 43  con HBP, elettrocatetere VD di backup in situazioni specifiche
+              (dipendenza, BAV di alto grado, blocco infranodale, soglia alta,
+              ablazione della giunzione programmata) ......................... IIa C
+       p. 44  leadless con nessun accesso venoso degli arti superiori o rischio
+              d'infezione della tasca particolarmente alto .................... IIa B
+       p. 44  leadless in alternativa al pacing ventricolare monocamerale
+              standard, con aspettativa di vita e decisione condivisa ......... IIb C
+     Testo senza classe:
+       p. 24  DDD(R) prima scelta nella SND; eccezioni (molto anziano o fragile,
+              pause infrequenti, sopravvivenza breve); DANPACE contro l'AAIR;
+              SND con FEVS severamente ridotta e alta quota di pacing
+              ventricolare: valutare CRT o HBP; sindrome da pacemaker in oltre
+              un quarto dei pazienti con SND; AV troppo lungo -> IM diastolica.
+       p. 27  DDD «quando ragionevole»; VVIR caso per caso nell'anziano fragile
+              o nel BAV parossistico con pacing infrequente; PICM nel 10-20%
+              dopo 2-4 anni, associata a >20% di pacing VD, nessuna quota sicura.
+       p. 28  FA: rate-adaptive prima scelta; VVI fisso all'anziano sedentario;
+              frequenza minima piu' alta, es. 70 b.p.m.
+       p. 29  bradicardia intermittente: frequenza di base bassa, isteresi AV;
+              VDD con funzione sinusale conservata, piu' undersensing atriale.
+       p. 38  BLOCK HF; MOST >=40% di pacing VD; la fragilita' pesa sulla CRT.
+       p. 42  HBP con QRS stretto o BBB corretto, altrimenti biventricolare.
+       p. 43  leadless: VVI(R) per FA o pacing molto infrequente, VDD per il BAV
+              con nodo del seno conservato (sincronia AV 70-90%); 2,7% eventi
+              gravi su 1817; 6,5% nella prima esperienza; cardiochirurgia in sede.
+              LBBAP: nessuna raccomandazione.
+       p. 44  nessun RCT a lungo termine; cautela sotto i 20 anni di aspettativa.
+     Suppl. Tab. S2, Suppl. p. 6: VVI(R) monocamerale ventricolare; VDD(R)
+       stimola il ventricolo e sente atrio e ventricolo.
+     Suppl. Tab. S6, Suppl. p. 10: sindrome da pacemaker fino al 25% dei
+       portatori di VVI. */
+  function M(b, r, x) { var m = { b:b, r:r || "" }; x = x || ""; m.avm = x.indexOf("avm") >= 0; m.ist = x.indexOf("ist") >= 0; return m; }
+  var FIG5 = {  // Fig. 5, p. 25
+    sndPersCiSi:  { via:"SND → persistente → incompetenza cronotropa: sì",
+                    def:{ modi:[M("DDD", "R", "avm")] }, due:{ modi:[M("AAI", "R")], mono:true }, com:{ modi:[M("VVI", "R")] } },
+    sndPersCiNo:  { via:"SND → persistente → incompetenza cronotropa: no",
+                    def:{ modi:[M("DDD", "", "avm")] }, due:{ modi:[M("AAI")], mono:true }, com:{ modi:[M("VVI")] } },
+    sndParox:     { via:"SND → parossistica",
+                    def:{ modi:[M("DDD", "a", "avm")] }, due:{ modi:[M("AAI", "a"), M("VVI", "a")], mono:true }, com:{ modi:[M("VVI", "", "ist")] } },
+    bavPersSnd:   { via:"BAV → persistente → con SND",
+                    def:{ modi:[M("DDD", "a")] }, due:{ modi:[M("VVI", "a")] }, com:null },
+    bavPersNoSnd: { via:"BAV → persistente → senza SND",
+                    def:{ modi:[M("DDD")] }, due:{ modi:[M("VDD")] }, com:{ modi:[M("VVI")] } },
+    bavPersFa:    { via:"BAV → persistente → FA",
+                    def:{ modi:[M("VVI", "R")] }, due:null, com:null },
+    bavParox:     { via:"BAV → parossistico",
+                    defRs:{ modi:[M("DDD", "", "avm")] }, defFa:{ modi:[M("VVI", "", "ist")] }, due:{ modi:[M("VDD")] }, com:{ modi:[M("VVI", "", "ist")] } }
+  };
+  var R = {  // [classe, livello, pagina]
+    minimVd:  ["I",   "A", "p. 26"],
+    dddR:     ["IIa", "B", "p. 26"],
+    faRate:   ["I",   "C", "p. 27"],
+    dddBav:   ["IIa", "A", "p. 27"],
+    crt:      ["I",   "A", "p. 38"],
+    hbp:      ["IIb", "C", "p. 43"],
+    backup:   ["IIa", "C", "p. 43"],
+    leadIIa:  ["IIa", "B", "p. 44"],
+    leadIIb:  ["IIb", "C", "p. 44"]
+  };
+  var SOGLIE = {
+    hfref: 40,     // p. 38: HFrEF (<40%); p. 43: HBP con FEVS >40%
+    quota: 20,     // p. 43: pacing ventricolare atteso >20%
+    hfref26: 50    // ESC 2026 scompenso: HFrEF <50% (_verifica.md, Confine) — solo per la riga CONFINE
+  };
+  var DOM = { fevs:[5, 80] }; // limiti di plausibilita' dello strumento, non della fonte
+
+  /* ═══ FUNZIONI PURE ═══════════════════════════════════════════════════ */
+  function pulisci(s) {
+    var c = {}, k; for (k in s) if (s.hasOwnProperty(k)) c[k] = s[k];
+    c.fuoriDom = [];
+    for (k in DOM) if (DOM.hasOwnProperty(k) && c[k] !== null && c[k] !== undefined && (c[k] < DOM[k][0] || c[k] > DOM[k][1])) { c.fuoriDom.push(k); c[k] = null; }
+    // campi che non valgono per il ramo scelto
+    if (c.dist !== "bav") { c.ritmo = ""; c.sndAss = ""; c.grado = ""; }
+    if (c.dist === "bav" && c.ritmo !== "rs") c.sndAss = "";
+    if (!(c.dist === "snd" || (c.dist === "bav" && c.and === "pers" && c.ritmo === "rs" && c.sndAss === "si"))) c.ci = "";
+    if (c.ci !== "si") c.sforzo = false;
+    return c;
+  }
+  function motiviDue(s) {
+    var p = [];
+    if (s.giovane) p.push("giovane età");
+    if (s.venoso === "limitato") p.push("accesso venoso limitato");
+    if (s.venoso === "assente") p.push("accesso venoso assente");
+    if (s.altro2) p.push("altro motivo");
+    return p;
+  }
+  function nomeModo(m, ci) {
+    var r = m.r === "R" ? "R" : m.r === "a" ? (ci === "si" ? "R" : ci === "no" ? "" : "(R)") : "";
+    return m.b + r + (m.avm ? " + AVM" : "") + (m.ist ? " + isteresi di frequenza" : "");
+  }
+  function nomeCella(c, ci) {
+    if (!c) return null;
+    var n = [];
+    for (var i = 0; i < c.modi.length; i++) n.push(nomeModo(c.modi[i], ci));
+    if (c.mono && n.length === 1) return n[0] + " monocamerale";
+    if (c.mono) return "monocamerale, " + n.join(" o ");
+    return n.join(" o ");
+  }
+  function haModo(celle, b) {
+    for (var i = 0; i < celle.length; i++) for (var j = 0; j < celle[i].modi.length; j++) if (celle[i].modi[j].b === b) return true;
+    return false;
+  }
+  function haR(celle, tipo) {
+    for (var i = 0; i < celle.length; i++) for (var j = 0; j < celle[i].modi.length; j++) if (celle[i].modi[j].r === tipo) return true;
+    return false;
+  }
+  function haAvm(celle) {
+    for (var i = 0; i < celle.length; i++) for (var j = 0; j < celle[i].modi.length; j++) if (celle[i].modi[j].avm) return true;
+    return false;
+  }
+
+  function colonna(s) {
+    if (!s.dist) return { perche:"scegliere il disturbo: SND o BAV" };
+    if (!s.and) return { perche:"indicare l'andamento: persistente o parossistico" };
+    if (s.dist === "snd") {
+      if (s.and === "parox") return { k:"sndParox" };
+      if (!s.ci) return { perche:"nella SND persistente la colonna la decide l'incompetenza cronotropa: indicarla" };
+      return { k:s.ci === "si" ? "sndPersCiSi" : "sndPersCiNo" };
+    }
+    if (!s.ritmo) return { perche:"indicare il ritmo atriale: sinusale o FA permanente" };
+    if (s.and === "parox") return { k:"bavParox" };
+    if (s.ritmo === "fa") return { k:"bavPersFa" };
+    if (!s.sndAss) return { perche:"nel BAV persistente in ritmo sinusale la colonna la decide la SND associata: indicarla" };
+    return { k:s.sndAss === "si" ? "bavPersSnd" : "bavPersNoSnd" };
+  }
+
+  function modo(s) {
+    var c = colonna(s);
+    if (!c.k) return { perche:c.perche };
+    var F = FIG5[c.k];
+    var def = c.k === "bavParox" ? (s.ritmo === "fa" ? F.defFa : F.defRs) : F.def;
+    var o = { k:c.k, via:F.via + (c.k === "bavParox" ? (s.ritmo === "fa" ? " → FA" : " → ritmo sinusale") : ""),
+              def:def, due:F.due, com:F.com, attive:{}, vuote:[], ris:[], motivi:motiviDue(s) };
+    var fDue = o.motivi.length > 0, fCom = !!s.comorb;
+    if (fDue) { if (F.due) { o.attive.due = true; o.ris.push(F.due); } else o.vuote.push("due"); }
+    if (fCom) { if (F.com) { o.attive.com = true; o.ris.push(F.com); } else o.vuote.push("com"); }
+    if (!o.ris.length) { o.attive.def = true; o.ris.push(def); o.soloDef = fDue || fCom; }
+    o.dueRipieghi = !!(o.attive.due && o.attive.com);
+    o.nome = [];
+    for (var i = 0; i < o.ris.length; i++) o.nome.push(nomeCella(o.ris[i], s.ci));
+    o.nome = o.nome.join(" oppure ");
+    o.rDaSciogliere = haR(o.ris, "a") && !s.ci;
+    o.rA = haR(o.ris, "a");
+    o.vddDubbio = c.k === "bavParox" && !!o.attive.due && (s.ritmo === "fa" || s.sndAss === "si");
+    o.ripiego = !!(o.attive.due || o.attive.com);
+    return o;
+  }
+
+  // raccomandazioni e testo che accompagnano il modo
+  function accompagna(s, m) {
+    var L = [];  // { st:"si"|"cond"|"no", r:[...]|null, t, pg }
+    if (!m.k) return L;
+    var ddd = haModo(m.ris, "DDD"), vvi = haModo(m.ris, "VVI");
+    if (s.dist === "snd") {
+      L.push(ddd ? { st:"si", r:R.minimVd, t:"SND con pacemaker DDD: ridurre con la programmazione il pacing ventricolare non necessario — <b>raccomandato</b>" }
+                 : { st:"no", r:R.minimVd, t:"la riga della minimizzazione vale per la SND con un DDD: il modo indicato qui non lo è" });
+      L.push({ st:"info", t:"Nella SND il DDD(R) è il modo di prima scelta", pg:"p. 24" });
+    }
+    if (s.ci === "si")
+      L.push(s.sforzo ? { st:"si", r:R.dddR, t:"incompetenza cronotropa con sintomi chiari durante lo sforzo: DDD con risposta in frequenza — <b>da considerare</b>" }
+                      : { st:"cond", r:R.dddR, t:"DDD con risposta in frequenza: la riga chiede, oltre all'incompetenza cronotropa, <b>sintomi chiari durante lo sforzo</b>" });
+    if (s.dist === "bav" && s.ritmo === "rs") {
+      var st = ddd ? "si" : "cond";
+      var extra = [];
+      if (!ddd && haModo(m.ris, "VDD")) extra.push("il VDD è il ripiego della figura per chi deve evitare due elettrocateteri");
+      if (!ddd && vvi) extra.push("la preferenza vale <b>quando è ragionevole</b>: non con fragilità significativa, età molto avanzata, comorbidità che limitano l'aspettativa di vita, mobilità molto ridotta (p. 27)");
+      L.push({ st:st, r:R.dddBav, t:"BAV: DDD preferito al pacing ventricolare monocamerale, per evitare la sindrome da pacemaker e migliorare la qualità di vita — <b>da preferire</b>" + (extra.length ? " — " + extra.join("; ") : "") });
+    }
+    if (s.dist === "bav" && s.ritmo === "fa") {
+      var conR = false;
+      for (var i = 0; i < m.ris.length; i++) for (var j = 0; j < m.ris[i].modi.length; j++) if (m.ris[i].modi[j].b === "VVI" && m.ris[i].modi[j].r === "R") conR = true;
+      L.push(conR ? { st:"si", r:R.faRate, t:"FA permanente con indicazione al pacemaker: pacing ventricolare con risposta in frequenza — <b>raccomandato</b>" }
+                  : { st:"cond", r:R.faRate, t:"FA permanente con indicazione al pacemaker: pacing ventricolare con risposta in frequenza — <b>raccomandato</b>; la figura, nel BAV parossistico, dà VVI + isteresi senza R: vedi le incoerenze" });
+    }
+    return L;
+  }
+
+  function fisio(s) {
+    var o = { righe:[], bar:["kx", "—"], confine:false, confineCsp:false, rimando:false };
+    if (!s.dist) { o.perche = "scegliere il disturbo"; return o; }
+    if (s.fevs === null) { o.perche = "serve la FEVS"; return o; }
+    if (s.dist === "snd") {
+      if (s.fevs < SOGLIE.hfref) {
+        o.righe.push({ st:"si", r:null, t:"SND con FEVS severamente ridotta e un'alta quota di pacing ventricolare attesa: <b>va valutata un'indicazione a CRT o HBP</b>", pg:"p. 24" });
+        o.righe.push({ st:"info", t:"La fonte non dà un numero né per «severamente ridotta» né per l'«alta quota»: lo strumento mostra la frase sotto il 40%, il confine dell'HFrEF che la stessa linea guida usa alle pp. 37–38. Il giudizio resta clinico." });
+        o.bar = ["k2", "valutare CRT o HBP"]; o.rimando = true; o.esito = "p24";
+      } else {
+        o.esito = "nessuna"; o.perche = "nella SND la ESC 2021 chiede di valutare CRT o HBP solo con FEVS severamente ridotta (p. 24); la riga IIb C dell'HBP (p. 43) è per il BAV";
+        o.bar = ["k0", "nessuna riga"];
+      }
+      return o;
+    }
+    // BAV
+    if (s.fevs < SOGLIE.hfref26) o.confine = true;
+    if (s.fevs < SOGLIE.hfref) {
+      if (!s.grado) { o.perche = "serve il grado del BAV: la riga I A della CRT è per il BAV di alto grado"; return o; }
+      if (s.grado === "alto") {
+        o.esito = "crt";
+        o.righe.push({ st:"si", r:R.crt, t:"HFrEF (FEVS " + s.fevs + "%, &lt;40%) con indicazione al pacing ventricolare e BAV di alto grado: <b>CRT anziché pacing VD</b>, a ogni classe NYHA, anche in FA, per ridurre la morbilità — <b>raccomandata</b>" });
+        if (s.comorb) o.righe.push({ st:"info", t:"La fragilità pesa nella decisione sulla CRT, per i costi e le complicanze più alte", pg:"p. 38" });
+        o.bar = ["k4", "CRT " + R.crt[0] + " " + R.crt[1]]; o.rimando = true;
+      } else {
+        o.esito = "nessuna";
+        o.righe.push({ st:"no", r:R.crt, t:"la riga della CRT anziché il pacing VD chiede un BAV <b>di alto grado</b>: per questo BAV la ESC 2021 non ha una riga di CRT al primo impianto" });
+        o.bar = ["kx", "nessuna riga"];
+      }
+      o.righe.push({ st:"info", t:"Tre RCT hanno mostrato il biventricolare superiore al pacing VD nella disfunzione sistolica moderata-severa con indicazione antibradicardica; in BLOCK HF (691 pazienti con FE &lt;50% all'inclusione) l'esito composito migliorava con la CRT", pg:"p. 38" });
+      return o;
+    }
+    if (s.fevs === SOGLIE.hfref) {
+      o.esito = "lacuna"; o.lacuna40 = true;
+      o.perche = "FEVS 40%: la riga della CRT vale sotto il 40% (p. 38), quella dell'HBP sopra il 40% (p. 43) — nessuna delle due";
+      o.bar = ["kx", "FEVS 40: lacuna"];
+      return o;
+    }
+    // FEVS > 40
+    if (!s.quota) { o.perche = "serve la quota di pacing ventricolare attesa: la riga IIb C dell'HBP chiede più del 20%"; return o; }
+    if (s.quota === "alta") {
+      o.esito = "hbp";
+      o.righe.push({ st:"si", r:R.hbp, t:"BAV, FEVS " + s.fevs + "% (&gt;40%) e pacing ventricolare atteso oltre il 20%: <b>stimolazione hisiana (HBP) in alternativa al pacing VD</b> — <b>può essere considerata</b>" });
+      o.righe.push({ st:"info", t:"L'HBP è un'opzione con QRS stretto o se corregge il blocco di branca; altrimenti è indicato il biventricolare", pg:"p. 42" });
+      o.righe.push({ st:(s.grado === "alto" ? "si" : "cond"), r:R.backup, t:"con HBP, <b>elettrocatetere VD di backup</b> da considerare in situazioni specifiche: dipendenza dal pacing, BAV di alto grado, blocco infranodale, soglia alta, ablazione della giunzione programmata" + (s.grado === "alto" ? " — il BAV di alto grado è una di queste" : "") });
+      o.bar = ["k2", "HBP " + R.hbp[0] + " " + R.hbp[1]]; o.rimando = true;
+      if (o.confine) o.confineCsp = true;
+    } else {
+      o.esito = "nessuna";
+      o.righe.push({ st:"no", r:R.hbp, t:"la riga dell'HBP chiede un pacing ventricolare atteso <b>oltre il 20%</b>" });
+      o.bar = ["k0", "nessuna riga"];
+    }
+    return o;
+  }
+
+  function leadless(s, m) {
+    var o = { righe:[], bar:["kx", "—"], cautele:false };
+    if (!s.dist) { o.perche = "scegliere il disturbo"; return o; }
+    var ven = haModo(m.ris || [], "VVI"), vdd = haModo(m.ris || [], "VDD");
+    if (s.venoso === "assente" || s.infez) {
+      var via = [];
+      if (s.venoso === "assente") via.push("nessun accesso venoso degli arti superiori");
+      if (s.infez) via.push("rischio d'infezione della tasca particolarmente alto");
+      o.righe.push({ st:"si", r:R.leadIIa, t:"Leadless <b>da considerare</b> in alternativa al pacemaker transvenoso: " + via.join(" e ") });
+      o.bar = ["k3", "IIa B"]; o.cautele = true; o.iia = true;
+      if (m.k && (haModo(m.ris, "DDD") || haModo(m.ris, "AAI"))) o.righe.push({ st:"info", t:"Il leadless non fa il modo indicato dalla figura: funziona in VVI(R) — FA o pacing molto infrequente, per esempio BAV parossistico — o in VDD, nel BAV con nodo del seno conservato, con sincronia AV nel 70–90% del tempo", pg:"p. 43" });
+    } else if (s.venoso === "limitato") {
+      o.righe.push({ st:"no", r:R.leadIIa, t:"accesso venoso <b>limitato</b>, non assente: la riga IIa B non si applica; è un motivo per evitare il secondo elettrocatetere (nota b della Fig. 5)" });
+    }
+    if (!m.k) {
+      if (!o.iia) o.perche = "serve prima il modo: " + m.perche;
+      return o;
+    }
+    if (ven) {
+      o.righe.push({ st:"si", r:R.leadIIb, t:"Leadless in alternativa al pacing ventricolare monocamerale standard, pesando l'aspettativa di vita, con decisione condivisa — <b>può essere considerato</b>" });
+      if (!o.iia) o.bar = ["k2", "IIb C"];
+      o.cautele = true;
+    }
+    if (ven || vdd) {
+      o.righe.push({ st:"info", t:"Nei candidati a un pacemaker VVI o VDD il leadless può essere considerato (nota della Fig. 5)", pg:"Fig. 5, p. 25" });
+      if (vdd && !ven) {
+        o.righe.push({ st:"info", t:"Il leadless VDD estende l'indicazione al BAV con nodo del seno conservato: sincronia AV mantenuta nel 70–90% del tempo, in due studi con 73 pazienti", pg:"p. 43" });
+        if (!o.iia) o.bar = ["kx", "considerabile"];
+        o.cautele = true;
+      }
+    }
+    if (!o.iia && !ven && !vdd) {
+      o.nessuno = true; o.bar = ["kx", "no"];
+      o.perche = "il modo indicato non è VVI né VDD, e non ci sono i motivi della riga IIa B";
+    }
+    return o;
+  }
+
+  function incoerenze(s, m, f) {
+    var L = [];
+    if (s.dist === "snd" && m.k && haModo(m.ris, "VVI"))
+      L.push("<b>Sindrome da pacemaker.</b> A p. 24 può colpire <b>oltre un quarto</b> dei pazienti con SND; nella Suppl. Tab. S6 <b>fino al 25%</b> dei portatori di VVI. Le due cifre non coincidono e la fonte non le concilia: lo strumento le riporta come sono." + pgs("ESC 2021, p. 24; Suppl. Tab. S6, Suppl. p. 10"));
+    if (m.vddDubbio)
+      L.push("<b>VDD nel BAV parossistico.</b> La figura dà il VDD come ripiego per tutta la colonna, senza separare ritmo sinusale, FA o SND; a p. 29 il VDD è un'alternativa nei disturbi avanzati della conduzione AV <b>con funzione sinusale conservata</b>, a p. 43 il leadless VDD è per il BAV con nodo del seno conservato, e nel BAV persistente la figura stessa toglie il VDD quando c'è SND. Il VDD sente l'atrio (Suppl. Tab. S2)" + (s.ritmo === "fa" ? "; in FA il default della colonna, VVI + isteresi, è già monocamerale" : "") + ". <b>Due letture:</b> (1) il ripiego VDD vale solo in ritmo sinusale senza SND; (2) vale per la colonna intera. Lo strumento mostra la figura e non sceglie." + pgs("ESC 2021, Fig. 5, p. 25; pp. 29, 43; Suppl. Tab. S2, Suppl. p. 6"));
+    if (m.k === "bavParox" && s.ritmo === "fa")
+      L.push("<b>FA nel BAV parossistico.</b> La figura dà <b>VVI + isteresi di frequenza</b>, senza risposta in frequenza; la riga di p. 27 raccomanda nella FA permanente il pacing ventricolare <b>con risposta in frequenza</b> (I C), e a p. 28 il VVI a frequenza fissa è riservato all'anziano sedentario con attività molto limitata. La figura non dice se la sua FA sia permanente. <b>Due letture:</b> (1) nella FA permanente vale la riga I C, e la R si aggiunge; (2) nel BAV parossistico, con pacing infrequente, vale la figura. Lo strumento le mostra entrambe." + pgs("ESC 2021, Fig. 5, p. 25; pp. 27, 28"));
+    if (s.dist === "bav" && s.ritmo === "rs" && s.comorb && m.k && m.attive.com)
+      L.push("<b>VVI o VVIR per il paziente fragile con BAV.</b> La figura dà, per la comorbidità, <b>" + nomeCella(m.com, s.ci) + "</b>, senza R; il testo di p. 27 dice che, caso per caso, nell'anziano fragile e/o nel BAV parossistico con pacing infrequente, il <b>VVIR</b> può essere considerato. <b>Due letture:</b> (1) la figura, più specifica, toglie la R dove non c'è incompetenza cronotropa (nota a); (2) il testo ammette la R anche senza. Lo strumento mostra la figura." + pgs("ESC 2021, Fig. 5, p. 25; p. 27"));
+    if (f.lacuna40)
+      L.push("<b>FEVS esattamente 40%.</b> La CRT anziché il pacing VD vale per l'HFrEF <b>&lt;40%</b> (p. 38), l'HBP in alternativa al pacing VD per la FEVS <b>&gt;40%</b> (p. 43): il 40% non sta in nessuna delle due righe. Lo strumento non sceglie da che parte metterlo." + pgs("ESC 2021, pp. 38, 43"));
+    return L;
+  }
+
+  /* ═══ STATO E DISEGNO ═════════════════════════════════════════════════ */
+  function el(id) { return document.getElementById(id); }
+  function ck(id) { var e = el(id); return !!(e && e.checked); }
+  function num(id) {
+    var e = el(id); if (!e) return null;
+    var v = e.value.replace(",", ".").trim();
+    if (v === "") return null;
+    var n = parseFloat(v);
+    return isFinite(n) ? n : null;
+  }
+  function radio(n) { var e = document.querySelector('input[name="' + n + '"]:checked'); return e ? e.value : ""; }
+  function pgs(p) { return ' <span class="pg">' + p + "</span>"; }
+  function corPill(c, l) { var k = { "I":"c1", "IIa":"c2a", "IIb":"c2b", "III":"c3" }[c]; return '<span class="cor ' + k + '">' + c + "</span>" + (l ? ' <span class="cor ' + k + '" style="opacity:.85">' + l + "</span>" : ""); }
+  var SENZA = '<span class="cor cnc">senza classe</span>';
+  function nota(g, t) { return '<div class="nota ' + (g || "") + '">' + t + "</div>"; }
+  function chip(k, t) { return '<span class="cat ' + k + '">' + t + "</span>"; }
+  function riga(cls, ico, t) { return '<div class="riga ' + cls + '"><span class="ico">' + ico + '</span><span class="tx">' + t + "</span></div>"; }
+  var ESC = "ESC 2021, ";
+  function rigaRacc(x) {
+    if (x.st === "info") return nota("info", x.t + (x.pg ? pgs(ESC + x.pg) : "") + ".");
+    var cls = { si:"si", cond:"nd", no:"no" }[x.st], ico = { si:"→", cond:"?", no:"·" }[x.st];
+    return riga(cls, ico, x.t + " " + (x.r ? corPill(x.r[0], x.r[1]) + pgs(ESC + x.r[2]) : SENZA + (x.pg ? pgs(ESC + x.pg) : "")));
+  }
+
+  function S() {
+    return {
+      dist:radio("dist"), and:radio("and"), ritmo:radio("ritmo"), sndAss:radio("sndAss"),
+      ci:radio("ci"), sforzo:ck("sforzo"), grado:radio("grado"),
+      giovane:ck("giovane"), altro2:ck("altro2"), venoso:radio("venoso"), comorb:ck("comorb"),
+      fevs:num("fevs"), quota:radio("quota"), infez:ck("infez")
+    };
+  }
+
+  function disegna() {
+    var s0 = S(), s = pulisci(s0);
+    // campi che contano solo in certi rami
+    el("rigaRitmo").className = "row" + (s.dist === "bav" ? "" : " hide");
+    el("rigaSndAss").className = "row" + (s.dist === "bav" && s.ritmo === "rs" ? "" : " hide");
+    el("rigaGrado").className = "row" + (s.dist === "bav" ? "" : " hide");
+    var vediCi = s.dist === "snd" || (s.dist === "bav" && s.and === "pers" && s.ritmo === "rs" && s.sndAss === "si");
+    el("rigaCi").className = "row" + (vediCi ? "" : " hide");
+    el("rigaSforzo").className = "chk" + (vediCi && s.ci === "si" ? "" : " hide");
+
+    var m = modo(s), f = fisio(s), l = leadless(s, m);
+    var dom = s.fuoriDom.length ? nota("stop", "<b>Valore fuori dominio, ignorato:</b> FEVS (atteso 5–80%). Lo strumento lo tratta come non inserito.") : "";
+
+    /* (a) il modo */
+    var h = "<h3>Modo di stimolazione — ESC 2021, Fig. 5, p. 25</h3>", barM = ["kx", "—"];
+    if (!m.k) {
+      h += '<div class="esito">' + chip("kx", "—") + '<span class="muted">' + m.perche + "</span></div>";
+    } else {
+      h += '<div class="via">' + m.via + "</div>";
+      var sotto = m.dueRipieghi ? chip("k2", "due ripieghi") : m.ripiego ? chip("k2", "ripiego") : chip("k1", "default");
+      if (m.vddDubbio) sotto += chip("k3", "vedi incoerenze");
+      h += '<div class="esito"><span class="big">' + m.nome + "</span>" + sotto + "</div>";
+      var celle = [["def", "Opzione di default", m.def], ["due", "Se c'è un motivo per evitare due elettrocateteri", m.due], ["com", "Se c'è una comorbidità significativa", m.com]];
+      for (var i = 0; i < celle.length; i++) {
+        var on = !!m.attive[celle[i][0]], nome = nomeCella(celle[i][2], s.ci);
+        h += riga(on ? "si" : "no", on ? "→" : "·", "<b>" + celle[i][1] + "</b> — " + (nome || "nessuna alternativa nella figura") + pgs(ESC + "Fig. 5, p. 25"));
+      }
+      if (m.motivi.length) h += nota("info", "Motivi per evitare due elettrocateteri: <b>" + m.motivi.join(", ") + "</b>. La nota b della figura nomina la giovane età e l'accesso venoso limitato" + pgs(ESC + "Fig. 5 nota b, p. 25") + ".");
+      if (m.soloDef) {
+        var qv = [];
+        for (var q = 0; q < m.vuote.length; q++) qv.push(m.vuote[q] === "due" ? "per chi deve evitare due elettrocateteri" : "per la comorbidità");
+        h += nota("", "In questa colonna la figura <b>non indica un ripiego</b> " + qv.join(" né ") + ": resta l'opzione di default della figura" + (m.k === "bavPersFa" ? ", che è già monocamerale (VVIR, Suppl. Tab. S2)" : "") + ", e il resto è giudizio clinico" + pgs(ESC + "Fig. 5, p. 25") + ".");
+      } else if (m.vuote.length) {
+        h += nota("", "La figura non indica un ripiego " + (m.vuote[0] === "due" ? "per chi deve evitare due elettrocateteri" : "per la comorbidità") + " in questa colonna: vale quello mostrato" + pgs(ESC + "Fig. 5, p. 25") + ".");
+      }
+      if (m.dueRipieghi) h += nota("", "Valgono <b>entrambi</b> i ripieghi: la figura non dice quale dei due prevalga, e lo strumento li mostra tutti e due.");
+      if (m.rA) {
+        if (m.rDaSciogliere) h += nota("", "<b>(R) da sciogliere:</b> la risposta in frequenza si programma solo con incompetenza cronotropa — indicarla" + pgs(ESC + "Fig. 5 nota a, p. 25") + ".");
+        else h += nota("info", "(R) sciolta: " + (s.ci === "si" ? "con incompetenza cronotropa si programma la risposta in frequenza" : "senza incompetenza cronotropa la risposta in frequenza non si programma") + pgs(ESC + "Fig. 5 nota a, p. 25") + ".");
+      }
+      if (haAvm(m.ris)) h += nota("info", "<b>AVM</b>, gestione AV: ritardo AV programmato <b>senza superare i 230 ms</b>, oppure algoritmi che evitano o riducono il pacing ventricolare non necessario" + pgs(ESC + "legenda della Fig. 5, p. 25") + ". Un ritardo AV troppo lungo, scelto per evitare il pacing VD in chi conduce lentamente, può dare rigurgito mitralico diastolico, sintomi e FA; raramente gli algoritmi di minimizzazione hanno causato aritmie ventricolari legate alle pause" + pgs(ESC + "p. 24") + ".");
+      // nella barra il nome corto, perche' resti su una riga anche a 390 px
+      var breve = m.nome.replace(/ \+ isteresi di frequenza/g, " + isteresi").replace(/ oppure /g, " / ");
+      barM = [m.vddDubbio ? "k3" : m.ripiego ? "k2" : "k1", breve + (m.vddDubbio ? " · incoerenza" : "")];
+    }
+    el("outModo").innerHTML = dom + h;
+
+    /* (b) raccomandazioni e testo che accompagnano il modo */
+    var hr = "<h3>Che cosa accompagna il modo — pp. 24–29</h3>";
+    if (!m.k) {
+      hr += '<div class="esito">' + chip("kx", "—") + '<span class="muted">' + m.perche + "</span></div>";
+    } else {
+      var A = accompagna(s, m);
+      for (var a = 0; a < A.length; a++) hr += rigaRacc(A[a]);
+      if (s.dist === "snd" && haModo(m.ris, "AAI")) hr += nota("", "Il DDD(R) è preferito di routine all'AAIR: in DANPACE (1415 pazienti, 5,4 anni) nessuna differenza di mortalità, ma più FA parossistica e il doppio di reinterventi con l'AAIR, e un BAV che compare nello 0,6–1,9% dei pazienti ogni anno" + pgs(ESC + "p. 24") + ".");
+      if (s.dist === "snd" && s.comorb) hr += nota("", "Eccezione della SND: nel molto anziano o fragile con pause infrequenti, capacità funzionale limitata o sopravvivenza attesa breve il DDD(R) rispetto al VVIR cambia poco o nulla, e pesa il rischio del secondo elettrocatetere" + pgs(ESC + "p. 24") + " " + SENZA + ".");
+      if (s.dist === "bav" && s.ritmo === "rs" && s.comorb) hr += nota("", "Nel BAV, caso per caso, nell'anziano fragile e/o nel BAV parossistico con pacing atteso infrequente, il VVIR può essere considerato perché ha meno complicanze" + pgs(ESC + "p. 27") + " " + SENZA + ".");
+      if (s.dist === "bav" && s.ritmo === "rs" && haModo(m.ris, "VDD")) hr += nota("info", "VDD: un'alternativa nei disturbi avanzati della conduzione AV con funzione sinusale conservata; rispetto al DDD meno complicanze e procedure più brevi, ma sensing atriale spesso insufficiente" + pgs(ESC + "p. 29") + ".");
+      if (s.dist === "bav" && s.ritmo === "fa") hr += nota("info", "Nella FA il pacing con risposta in frequenza migliora sforzo, attività quotidiane, sintomi e qualità di vita rispetto alla frequenza fissa; il VVI a frequenza fissa si riserva all'anziano sedentario con attività molto limitata; la frequenza minima si programma di solito più alta che in ritmo sinusale, <b>per esempio 70 b.p.m.</b>, per compensare la perdita del riempimento atriale" + pgs(ESC + "p. 28") + ".");
+      if (s.and === "parox") hr += nota("info", "Bradicardia intermittente: il pacing può servire per brevi periodi; contano una frequenza di base bassa per il solo backup, l'intervallo AV adattato a mano, l'isteresi AV o altri algoritmi che evitano il pacing VD non necessario. Nell'anziano o fragile il modo si sceglie sul singolo paziente, pesando complicanze e costi del DDD" + pgs(ESC + "p. 29") + ".");
+      if (m.ripiego && haModo(m.ris, "VVI") && s.dist === "bav") hr += nota("info", "Nel BAV la sindrome da pacemaker è comparsa fino in un quarto dei pazienti dei trial con pacing ventricolare" + pgs(ESC + "p. 27") + ".");
+    }
+    el("outRacc").innerHTML = hr;
+
+    /* (c) verso CRT e HBP */
+    var hf = "<h3>Verso CRT o stimolazione hisiana — " + (s.dist === "snd" ? "p. 24" : "pp. 38, 42–43") + "</h3>";
+    if (f.perche && !f.righe.length) {
+      hf += '<div class="esito">' + chip(f.esito === "nessuna" ? "k0" : "kx", f.esito === "nessuna" ? "nessuna riga" : f.esito === "lacuna" ? "lacuna" : "—") + '<span class="muted">' + f.perche + "</span></div>";
+    } else {
+      for (var b = 0; b < f.righe.length; b++) hf += rigaRacc(f.righe[b]);
+    }
+    if (f.rimando) hf += nota("info", "<b>Fra CRT biventricolare e stimolazione del sistema di conduzione</b> (HBP o LBBAP) questo strumento non sceglie: lo fa lo strumento CSP sul consensus EHRA/ESC 2025, più recente della ESC 2021 per il CSP. Nella ESC 2021 il LBBAP non ha raccomandazioni" + pgs(ESC + "p. 43") + ".");
+    if (f.confine) hf += nota("confine", "<b>CONFINE · ESC 2026 sullo scompenso.</b> L'HFrEF è la FEVS <b>&lt;50%</b>, e la CRT anziché il pacing VD nel BAV di alto grado è <b>IIa B1</b> (nella ESC 2021 I A sotto il 40%)" + (f.confineCsp ? "; e la ESC 2026 non ha raccomandazioni sul CSP nell'HFrEF" : "") + ". Lo strumento non la calcola: la classe corrente sta nello strumento «ICD e CRT» dello scompenso (ESC 2026).");
+    if (s.dist && s.fevs !== null) hf += nota("", "Nessuna quota di pacing VD è dimostrata sicura: la cardiomiopatia da pacing compare nel 10–20% dei pazienti dopo 2–4 anni ed è associata a una quota oltre il 20%" + pgs(ESC + "p. 27") + "; in MOST almeno il 40% di pacing VD si associava a più ricoveri per scompenso o FA" + pgs(ESC + "p. 38") + ".");
+    el("outFisio").innerHTML = hf;
+
+    /* (d) leadless */
+    var hl = "<h3>Leadless — p. 44 · p. 43 · nota della Fig. 5</h3>";
+    if (l.nessuno) hl += '<div class="esito">' + chip("kx", "non previsto") + '<span class="muted">' + l.perche + "</span></div>";
+    else if (l.perche) hl += '<div class="esito">' + chip("kx", "—") + '<span class="muted">' + l.perche + "</span></div>";
+    for (var c = 0; c < l.righe.length; c++) hl += rigaRacc(l.righe[c]);
+    if (l.cautele) hl += nota(s.giovane ? "stop" : "", "Si impianta nel ventricolo destro per via femorale; nel registro di 1817 pazienti eventi avversi gravi nel 2,7%, ma nella prima esperienza degli operatori complicanze maggiori nel 6,5%: servono formazione e cardiochirurgia in sede" + pgs(ESC + "p. 43") + ". Mancano RCT a lungo termine contro il transvenoso e i dati sulla rimozione e sulla fine della batteria sono pochi: si decide caso per caso, con più cautela nel paziente giovane, per esempio con un'aspettativa di vita oltre 20 anni" + pgs(ESC + "p. 44") + (s.giovane ? ". <b>Qui è segnata la giovane età.</b>" : "."));
+    el("outLead").innerHTML = hl;
+
+    /* incoerenze e limiti */
+    var L = incoerenze(s, m, f), hinc = "";
+    for (var j = 0; j < L.length; j++) hinc += nota("", L[j]);
+    el("outInc").innerHTML = hinc || '<p class="muted" style="font-size:13px">Nessuna, per questo caso.</p>';
+
+    var lim = [];
+    lim.push("Lo strumento sceglie il modo del <b>primo impianto</b> e dà per acquisita l'indicazione al pacing (pp. 26–27). L'upgrade a CRT di chi ha già un pacemaker" + pgs(ESC + "p. 37") + ", i disturbi di conduzione senza BAV, la sincope riflessa e le condizioni specifiche (dopo IMA, cardiochirurgia, TAVI, cardiopatie congenite) non sono coperti.");
+    if (s.dist === "bav") lim.push("La figura scrive «FA» senza dire di che tipo; la riga I C di p. 27 e il § 5.2.2.2 parlano di FA <b>permanente</b>, e lo strumento legge così la colonna. Con FA parossistica o persistente la figura non dice quale colonna usare.");
+    if (s.dist === "snd") lim.push("Nella SND la figura non prevede la FA permanente: nella fonte la bradicardia in FA permanente è trattata come BAV in FA" + pgs(ESC + "§ 5.2.2.2, p. 27") + ".");
+    if (s.dist === "bav") lim.push("La riga I A della CRT dice «BAV di alto grado»; a p. 26 l'alto grado è il BAV avanzato (P:QRS 3:1 o più), nominato accanto al III grado. Lo strumento legge la riga come comprendente il BAV completo.");
+    lim.push("«Comorbidità significativa» è la parola della figura; il testo la dettaglia a p. 27 (BAV) e a p. 24 (SND). I motivi per evitare due elettrocateteri della nota b sono un elenco aperto.");
+    lim.push("La quota di pacing ventricolare attesa è una stima di chi usa lo strumento: la fonte non dice come calcolarla.");
+    lim.push("Il limite di plausibilità della FEVS (5–80%) è dello strumento, non della fonte.");
+    el("limiti").innerHTML = "<li>" + lim.join("</li><li>") + "</li>";
+
+    function bar(id, k, t) { var e = el(id); e.className = "cat " + k; e.innerHTML = t; }
+    bar("barModo", barM[0], barM[1]); bar("barFisio", f.bar[0], f.bar[1]); bar("barLead", l.bar[0], l.bar[1]);
+  }
+
+  document.addEventListener("input", disegna);
+  document.addEventListener("change", disegna);
+  el("azzera").addEventListener("click", function () {
+    var ins = document.querySelectorAll("input");
+    for (var i = 0; i < ins.length; i++) {
+      if (ins[i].type === "checkbox" || ins[i].type === "radio") ins[i].checked = false;
+      else ins[i].value = "";
+    }
+    disegna();
+    window.scrollTo(0, 0);
+  });
+
+  window.MODO_MOTORE = { modo:function (s) { return modo(pulisci(s)); }, fisio:function (s) { return fisio(pulisci(s)); } };
+  disegna();
+})();
+</script>
+<script data-iphone="web">
+// Solo da un indirizzo https, cioe' dalla pagina pubblicata: aperto come file
+// il tool non cerca ne' manifest ne' service worker, che accanto al file non
+// ci sono. Un errore qui non deve fermare niente: e' un di piu'.
+(function(){
+if(location.protocol!=="https:") return;
+try{
+  var t=document.getElementsByTagName("head")[0];
+  var m=document.createElement("link"); m.rel="manifest"; m.href="manifest.webmanifest";
+  var i=document.createElement("link"); i.rel="apple-touch-icon"; i.href="icona-180.png";
+  t.appendChild(m); t.appendChild(i);
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js")["catch"](function(){});
+}catch(e){}
+})();
+</script>
+<script data-iphone="fine">document.documentElement.className+=" motore-ok";</script>
+</body>
+</html>
